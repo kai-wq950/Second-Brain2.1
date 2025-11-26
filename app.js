@@ -3,6 +3,9 @@ const signalsRoot = document.getElementById("signals");
 const themeToggle = document.getElementById("toggle-theme");
 const shuffleButton = document.getElementById("shuffle");
 const summaryChip = document.getElementById("summary-chip");
+const metricAvg = document.getElementById("metric-avg");
+const metricStable = document.getElementById("metric-stable");
+const metricVolatile = document.getElementById("metric-volatile");
 
 const subjects = [
   {
@@ -95,7 +98,13 @@ function renderSubjects(list) {
   });
 
   const average = list.reduce((sum, item) => sum + item.confidence, 0) / list.length;
+  const stable = list.filter((item) => item.confidence >= 4).length;
+  const volatileCount = list.filter((item) => item.trend === "volatile").length;
+
   summaryChip.textContent = `avg ${average.toFixed(1)} / 5`;
+  metricAvg.textContent = average.toFixed(1);
+  metricStable.textContent = stable;
+  metricVolatile.textContent = volatileCount;
 }
 
 function renderSignals(list) {
