@@ -2,36 +2,101 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Second Brain</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Fonts -->
+    <title>Subject Confidence — Nothing OS Style</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="root"></div>
+    <div class="chrome">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">subject signal sheet</p>
+          <h1>Confidence Monitor</h1>
+          <p class="lede">
+            A Nothing OS inspired confidence console. Each subject reads 1–5 with dot-matrix
+            meters, monochrome cards, and minimal accent pulses.
+          </p>
+        </div>
+        <div class="topbar__actions">
+          <button class="ghost" id="toggle-theme" aria-label="Toggle theme">light / dark</button>
+          <button class="primary" id="shuffle" aria-label="Shuffle signals">shuffle</button>
+          <div class="swatches" role="group" aria-label="Accent">
+            <button class="swatch swatch--active" data-accent="#00DFA3" aria-label="Mint"></button>
+            <button class="swatch" data-accent="#FF5E3A" aria-label="Coral"></button>
+            <button class="swatch" data-accent="#00FFAA" aria-label="Neon"></button>
+            <button class="swatch" data-accent="#FFB347" aria-label="Amber"></button>
+          </div>
+        </div>
+      </header>
 
-    <!-- React & ReactDOM UMD builds -->
-    <script
-      crossorigin
-      src="https://unpkg.com/react@18/umd/react.development.js"
-    ></script>
-    <script
-      crossorigin
-      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
-    ></script>
+      <main class="grid">
+        <section class="panel panel--wide status">
+          <div class="status__identity">
+            <div class="glyph">
+              <div class="glyph__ring glyph__ring--outer"></div>
+              <div class="glyph__ring glyph__ring--inner"></div>
+              <div class="glyph__dot"></div>
+            </div>
+            <div>
+              <p class="eyebrow">design system</p>
+              <h2>Nothing OS spec</h2>
+              <div class="status__tags">
+                <span class="pill">monochrome</span>
+                <span class="pill">dot-matrix</span>
+                <span class="pill">glass cards</span>
+              </div>
+            </div>
+          </div>
+          <div class="status__metrics">
+            <div class="metric">
+              <p class="micro__label">mean confidence</p>
+              <p class="metric__value" id="metric-avg">0.0</p>
+              <div class="dots dots--pulse" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="metric">
+              <p class="micro__label">stable subjects</p>
+              <p class="metric__value" id="metric-stable">0</p>
+              <p class="metric__hint">≥4 /5 confidence</p>
+            </div>
+            <div class="metric">
+              <p class="micro__label">volatility</p>
+              <p class="metric__value" id="metric-volatile">0</p>
+              <p class="metric__hint">watch-list count</p>
+            </div>
+          </div>
+        </section>
 
-    <!-- Babel so we can write JSX in app.js -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <section class="panel panel--wide">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">confidence table</p>
+              <h2>Subjects</h2>
+            </div>
+            <div class="chip" id="summary-chip">avg 0.0 / 5</div>
+          </div>
+          <div class="list" id="subject-list"></div>
+        </section>
 
-    <!-- Our app -->
-    <script type="text/babel" src="app.js"></script>
+        <section class="panel stack">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">quick pulses</p>
+              <h2>Signals</h2>
+            </div>
+          </div>
+          <div class="signals" id="signals"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js" type="module"></script>
   </body>
 </html>
