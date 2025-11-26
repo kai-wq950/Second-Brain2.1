@@ -19,8 +19,7 @@
           <p class="eyebrow">subject signal sheet</p>
           <h1>Confidence Monitor</h1>
           <p class="lede">
-            A Nothing OS inspired confidence console. Each subject reads 1–5 with dot-matrix
-            meters, monochrome cards, and minimal accent pulses.
+            A Nothing OS inspired confidence console. Add topics and subtopics, filter subjects, and tune scores on the fly.
           </p>
         </div>
         <div class="topbar__actions">
@@ -64,12 +63,12 @@
             <div class="metric">
               <p class="micro__label">stable subjects</p>
               <p class="metric__value" id="metric-stable">0</p>
-              <p class="metric__hint">≥4 /5 confidence</p>
+              <p class="micro__hint">≥4 /5 confidence</p>
             </div>
             <div class="metric">
               <p class="micro__label">volatility</p>
               <p class="metric__value" id="metric-volatile">0</p>
-              <p class="metric__hint">watch-list count</p>
+              <p class="micro__hint">watch-list count</p>
             </div>
           </div>
         </section>
@@ -81,6 +80,31 @@
               <h2>Subjects</h2>
             </div>
             <div class="chip" id="summary-chip">avg 0.0 / 5</div>
+          </div>
+          <div class="filters">
+            <div class="filter">
+              <label class="micro__label" for="filter-search">search</label>
+              <input id="filter-search" type="search" placeholder="Find subject" />
+            </div>
+            <div class="filter">
+              <label class="micro__label" for="filter-min">min confidence</label>
+              <select id="filter-min">
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label class="micro__label" for="filter-trend">trend</label>
+              <select id="filter-trend">
+                <option value="all">all</option>
+                <option value="rising">rising</option>
+                <option value="steady">steady</option>
+                <option value="volatile">volatile</option>
+              </select>
+            </div>
           </div>
           <div class="list" id="subject-list"></div>
         </section>
