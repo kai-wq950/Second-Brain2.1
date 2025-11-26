@@ -22,6 +22,59 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 let editMode = false;
 
+const average = (values) =>
+  values.length ? values.reduce((sum, val) => sum + Number(val), 0) / values.length : 0;
+
+function computeTopicStats(topic) {
+  const subtopics = (topic.subtopics || []).map((sub) => ({
+    ...sub,
+    confidence: Number(sub.confidence),
+    updatedAt: sub.updatedAt || today(),
+  }));
+
+  const computedConfidence = subtopics.length
+    ? Number(average(subtopics.map((sub) => sub.confidence)).toFixed(1))
+    : Number(topic.confidence);
+
+  const computedUpdatedAt = subtopics.length
+    ? subtopics.reduce(
+        (latest, sub) => (sub.updatedAt > latest ? sub.updatedAt : latest),
+        subtopics[0].updatedAt
+      )
+    : topic.updatedAt || today();
+
+  return {
+    ...topic,
+    subtopics,
+    computedConfidence,
+    computedUpdatedAt,
+  };
+}
+
+function computeSubjectStats(subject) {
+  const topics = (subject.topics || []).map(computeTopicStats);
+
+  const computedConfidence = topics.length
+    ? Number(average(topics.map((topic) => topic.computedConfidence)).toFixed(1))
+    : Number(subject.confidence);
+
+  const computedUpdatedAt = topics.length
+    ? topics.reduce(
+        (latest, topic) => (topic.computedUpdatedAt > latest ? topic.computedUpdatedAt : latest),
+        topics[0].computedUpdatedAt
+      )
+    : subject.updatedAt || today();
+
+  return {
+    ...subject,
+    topics,
+    computedConfidence,
+    computedUpdatedAt,
+  };
+}
+
+const deriveSubjects = () => subjects.map(computeSubjectStats);
+
 let subjects = [
   {
     id: makeId(),
@@ -233,13 +286,23 @@ function topicList(topics, subjectId) {
             <button class="ghost icon delete-topic" data-subject="${subjectId}" data-topic-id="${topic.id}" aria-label="Delete topic">✕</button>
           </div>
         </div>
-        <div class="topic__meta">
-          <div class="control">
-            ${dotMeter(topic.confidence)}
-            <label class="slider">
-              <input type="range" min="1" max="5" step="1" value="${topic.confidence}" class="confidence-slider" data-scope="topic" data-topic-id="${topic.id}" data-subject="${subjectId}" aria-label="${topic.title} confidence" />
-              <span class="slider__value">${topic.confidence}/5</span>
-            </label>
+      <div class="topic__meta">
+          ${dotMeter(topic.computedConfidence)}
+          <div class="control view-only">
+            <div class="readout">
+              <span class="readout__value">${topic.computedConfidence}/5</span>
+              <span class="pill pill--date">${topic.computedUpdatedAt}</span>
+            </div>
+          </div>
+          <div class="control edit-only">
+            ${
+              topic.subtopics.length
+                ? `<span class="note">auto · avg of subtopics</span>`
+                : `<label class="slider">
+                    <input type=\"range\" min=\"1\" max=\"5\" step=\"1\" value=\"${topic.confidence}\" class=\"confidence-slider\" data-scope=\"topic\" data-topic-id=\"${topic.id}\" data-subject=\"${subjectId}\" aria-label=\"${topic.title} confidence\" />
+                    <span class=\"slider__value\">${topic.confidence}/5</span>
+                  </label>`
+            }
             <div class="date-control">
               <label class="micro__label">updated</label>
               <input type="date" class="date-input" data-scope="topic" data-topic-id="${topic.id}" data-subject="${subjectId}" value="${topic.updatedAt || today()}" />
@@ -254,7 +317,11 @@ function topicList(topics, subjectId) {
                     (sub) => `
                     <div class="subtopic" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}">
                       <input class="inline-input subtopic-title" value="${sub.title}" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" ${editMode ? "" : "readonly"} />
-                      <div class="subtopic__controls">
+                      <div class="subtopic__controls view-only">
+                        <span class="pill">${sub.confidence}/5</span>
+                        <span class="pill pill--date">${sub.updatedAt || today()}</span>
+                      </div>
+                      <div class="subtopic__controls edit-only">
                         <label class="slider slider--mini">
                           <input type="range" min="1" max="5" step="1" value="${sub.confidence}" class="confidence-slider" data-scope="subtopic" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" aria-label="${sub.title} confidence" />
                           <span class="slider__value">${sub.confidence}/5</span>
@@ -315,12 +382,15 @@ function renderSubjects(list) {
           </div>
         </div>
         <div class="card__meter">
-          ${dotMeter(subject.confidence)}
-          <div class="control">
-            <label class="slider">
-              <input type="range" min="1" max="5" step="1" value="${subject.confidence}" class="confidence-slider" data-scope="subject" data-id="${subject.id}" aria-label="${subject.name} confidence" />
-              <span class="slider__value">${subject.confidence}/5</span>
-            </label>
+          ${dotMeter(subject.computedConfidence)}
+          <div class="control view-only">
+            <div class="readout">
+              <span class="readout__value">${subject.computedConfidence}/5</span>
+              <span class="pill pill--date">${subject.computedUpdatedAt}</span>
+            </div>
+          </div>
+          <div class="control edit-only">
+            <span class="note">auto · avg of topics</span>
             <div class="date-control">
               <label class="micro__label">updated</label>
               <input type="date" class="date-input" data-scope="subject" data-id="${subject.id}" value="${subject.updatedAt || today()}" />
@@ -376,8 +446,8 @@ function updateMetrics(list) {
     return;
   }
 
-  const average = list.reduce((sum, item) => sum + item.confidence, 0) / list.length;
-  const stable = list.filter((item) => item.confidence >= 4).length;
+  const average = list.reduce((sum, item) => sum + item.computedConfidence, 0) / list.length;
+  const stable = list.filter((item) => item.computedConfidence >= 4).length;
   const volatileCount = list.filter((item) => item.trend === "volatile").length;
 
   summaryChip.textContent = `avg ${average.toFixed(1)} / 5`;
@@ -399,20 +469,20 @@ function renderSignals(list) {
     return;
   }
 
-  const highest = [...list].sort((a, b) => b.confidence - a.confidence)[0];
-  const lowest = [...list].sort((a, b) => a.confidence - b.confidence)[0];
+  const highest = [...list].sort((a, b) => b.computedConfidence - a.computedConfidence)[0];
+  const lowest = [...list].sort((a, b) => a.computedConfidence - b.computedConfidence)[0];
   const volatile = list.filter((item) => item.trend === "volatile");
 
   const items = [
     {
       label: "peak",
       value: `${highest.name}`,
-      detail: `${highest.confidence}/5 · ${highest.focus}`,
+      detail: `${highest.computedConfidence}/5 · ${highest.focus}`,
     },
     {
       label: "watch",
       value: `${lowest.name}`,
-      detail: `${lowest.confidence}/5 · ${lowest.focus}`,
+      detail: `${lowest.computedConfidence}/5 · ${lowest.focus}`,
     },
     {
       label: "volatile",
@@ -465,13 +535,14 @@ function setAccent(color, target) {
 }
 
 function applyFilters() {
+  const derived = deriveSubjects();
   const search = filterSearch.value.trim().toLowerCase();
   const min = Number(filterMin.value);
   const trend = filterTrend.value;
 
-  const filtered = subjects.filter((subject) => {
+  const filtered = derived.filter((subject) => {
     const matchesSearch = subject.name.toLowerCase().includes(search);
-    const matchesMin = subject.confidence >= min;
+    const matchesMin = subject.computedConfidence >= min;
     const matchesTrend = trend === "all" ? true : subject.trend === trend;
     return matchesSearch && matchesMin && matchesTrend;
   });
@@ -672,7 +743,7 @@ function handleSelectChange(target) {
 }
 
 function init() {
-  renderSubjects(subjects);
+  applyFilters();
   themeToggle.addEventListener("click", toggleTheme);
   shuffleButton.addEventListener("click", shuffleSubjects);
   manageToggle.addEventListener("click", toggleManage);
