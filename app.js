@@ -10,11 +10,17 @@ const swatches = document.querySelectorAll(".swatch");
 const filterSearch = document.getElementById("filter-search");
 const filterMin = document.getElementById("filter-min");
 const filterTrend = document.getElementById("filter-trend");
+const manageToggle = document.getElementById("manage-mode");
+const subjectForm = document.getElementById("subject-form");
 
 const makeId = () =>
   (typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
+const today = () => new Date().toISOString().slice(0, 10);
+
+let editMode = false;
 
 let subjects = [
   {
@@ -24,9 +30,30 @@ let subjects = [
     trend: "rising",
     focus: "calculus timing & error trimming",
     tag: "steady",
+    updatedAt: today(),
     topics: [
-      { title: "Calculus", subtopics: ["limits", "integration by parts", "series"] },
-      { title: "Probability", subtopics: ["binomial", "normal", "combinatorics drills"] },
+      {
+        id: makeId(),
+        title: "Calculus",
+        confidence: 4,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "limits", confidence: 4, updatedAt: today() },
+          { id: makeId(), title: "integration by parts", confidence: 3, updatedAt: today() },
+          { id: makeId(), title: "series", confidence: 3, updatedAt: today() },
+        ],
+      },
+      {
+        id: makeId(),
+        title: "Probability",
+        confidence: 3,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "binomial", confidence: 3, updatedAt: today() },
+          { id: makeId(), title: "normal", confidence: 2, updatedAt: today() },
+          { id: makeId(), title: "combinatorics drills", confidence: 3, updatedAt: today() },
+        ],
+      },
     ],
   },
   {
@@ -36,9 +63,28 @@ let subjects = [
     trend: "rising",
     focus: "complex numbers & matrices",
     tag: "building",
+    updatedAt: today(),
     topics: [
-      { title: "Matrices", subtopics: ["row reduction", "inverse proofs"] },
-      { title: "Complex", subtopics: ["arg diagrams", "De Moivre"] },
+      {
+        id: makeId(),
+        title: "Matrices",
+        confidence: 3,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "row reduction", confidence: 3, updatedAt: today() },
+          { id: makeId(), title: "inverse proofs", confidence: 2, updatedAt: today() },
+        ],
+      },
+      {
+        id: makeId(),
+        title: "Complex",
+        confidence: 3,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "arg diagrams", confidence: 2, updatedAt: today() },
+          { id: makeId(), title: "De Moivre", confidence: 3, updatedAt: today() },
+        ],
+      },
     ],
   },
   {
@@ -48,9 +94,29 @@ let subjects = [
     trend: "steady",
     focus: "multi-mark reasoning & graphs",
     tag: "hold",
+    updatedAt: today(),
     topics: [
-      { title: "Mechanics", subtopics: ["projectiles", "moments", "power"] },
-      { title: "Fields", subtopics: ["electric", "gravitational"] },
+      {
+        id: makeId(),
+        title: "Mechanics",
+        confidence: 3,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "projectiles", confidence: 3, updatedAt: today() },
+          { id: makeId(), title: "moments", confidence: 3, updatedAt: today() },
+          { id: makeId(), title: "power", confidence: 2, updatedAt: today() },
+        ],
+      },
+      {
+        id: makeId(),
+        title: "Fields",
+        confidence: 3,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "electric", confidence: 2, updatedAt: today() },
+          { id: makeId(), title: "gravitational", confidence: 3, updatedAt: today() },
+        ],
+      },
     ],
   },
   {
@@ -60,9 +126,29 @@ let subjects = [
     trend: "volatile",
     focus: "time complexity & trace logic",
     tag: "watch",
+    updatedAt: today(),
     topics: [
-      { title: "Algorithms", subtopics: ["dfs/bfs", "sorting", "complexity"] },
-      { title: "OOP", subtopics: ["design patterns", "encapsulation"] },
+      {
+        id: makeId(),
+        title: "Algorithms",
+        confidence: 2,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "dfs/bfs", confidence: 2, updatedAt: today() },
+          { id: makeId(), title: "sorting", confidence: 2, updatedAt: today() },
+          { id: makeId(), title: "complexity", confidence: 2, updatedAt: today() },
+        ],
+      },
+      {
+        id: makeId(),
+        title: "OOP",
+        confidence: 2,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "design patterns", confidence: 2, updatedAt: today() },
+          { id: makeId(), title: "encapsulation", confidence: 2, updatedAt: today() },
+        ],
+      },
     ],
   },
   {
@@ -72,9 +158,28 @@ let subjects = [
     trend: "steady",
     focus: "thesis clarity & concise edits",
     tag: "calm",
+    updatedAt: today(),
     topics: [
-      { title: "Analysis", subtopics: ["theme tracing", "quote selection"] },
-      { title: "Practice", subtopics: ["timed essays", "structure"] },
+      {
+        id: makeId(),
+        title: "Analysis",
+        confidence: 4,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "theme tracing", confidence: 4, updatedAt: today() },
+          { id: makeId(), title: "quote selection", confidence: 4, updatedAt: today() },
+        ],
+      },
+      {
+        id: makeId(),
+        title: "Practice",
+        confidence: 4,
+        updatedAt: today(),
+        subtopics: [
+          { id: makeId(), title: "timed essays", confidence: 4, updatedAt: today() },
+          { id: makeId(), title: "structure", confidence: 4, updatedAt: today() },
+        ],
+      },
     ],
   },
 ];
@@ -102,6 +207,14 @@ function dotMeter(value) {
   return `<div class="meter" aria-label="confidence ${value} of 5">${dots}</div>`;
 }
 
+function syncSliderLabel(target) {
+  const wrapper = target.closest(".slider");
+  const label = wrapper?.querySelector(".slider__value");
+  if (label) {
+    label.textContent = `${target.value}/5`;
+  }
+}
+
 function topicList(topics, subjectId) {
   if (!topics?.length) {
     return `<div class="topic topic--empty">No topics yet. Add one below.</div>`;
@@ -109,24 +222,60 @@ function topicList(topics, subjectId) {
 
   return topics
     .map(
-      (topic, topicIndex) => `
-      <div class="topic" data-subject="${subjectId}" data-topic-index="${topicIndex}">
+      (topic) => `
+      <div class="topic" data-subject="${subjectId}" data-topic-id="${topic.id}">
         <div class="topic__header">
           <div>
             <p class="micro__label">topic</p>
-            <p class="topic__title">${topic.title}</p>
+            <input class="inline-input topic-title" value="${topic.title}" data-subject="${subjectId}" data-topic-id="${topic.id}" ${editMode ? "" : "readonly"} />
           </div>
-          <span class="pill pill--ghost">${topic.subtopics.length} sub</span>
+          <div class="topic__actions manage-only">
+            <button class="ghost icon delete-topic" data-subject="${subjectId}" data-topic-id="${topic.id}" aria-label="Delete topic">✕</button>
+          </div>
+        </div>
+        <div class="topic__meta">
+          <div class="control">
+            ${dotMeter(topic.confidence)}
+            <label class="slider">
+              <input type="range" min="1" max="5" step="1" value="${topic.confidence}" class="confidence-slider" data-scope="topic" data-topic-id="${topic.id}" data-subject="${subjectId}" aria-label="${topic.title} confidence" />
+              <span class="slider__value">${topic.confidence}/5</span>
+            </label>
+            <div class="date-control">
+              <label class="micro__label">updated</label>
+              <input type="date" class="date-input" data-scope="topic" data-topic-id="${topic.id}" data-subject="${subjectId}" value="${topic.updatedAt || today()}" />
+            </div>
+          </div>
         </div>
         <div class="topic__subs">
           ${
             topic.subtopics.length
-              ? topic.subtopics.map((sub) => `<span class="chip chip--ghost">${sub}</span>`).join("")
+              ? topic.subtopics
+                  .map(
+                    (sub) => `
+                    <div class="subtopic" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}">
+                      <input class="inline-input subtopic-title" value="${sub.title}" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" ${editMode ? "" : "readonly"} />
+                      <div class="subtopic__controls">
+                        <label class="slider slider--mini">
+                          <input type="range" min="1" max="5" step="1" value="${sub.confidence}" class="confidence-slider" data-scope="subtopic" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" aria-label="${sub.title} confidence" />
+                          <span class="slider__value">${sub.confidence}/5</span>
+                        </label>
+                        <input type="date" class="date-input" data-scope="subtopic" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" value="${sub.updatedAt || today()}" />
+                        <button class="ghost icon delete-subtopic manage-only" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" aria-label="Delete subtopic">✕</button>
+                      </div>
+                    </div>
+                  `
+                  )
+                  .join("")
               : `<span class="note">add a subtopic below</span>`
           }
         </div>
-        <form class="subtopic-form" data-subject="${subjectId}" data-topic-index="${topicIndex}">
+        <form class="subtopic-form manage-only" data-subject="${subjectId}" data-topic-id="${topic.id}">
           <input type="text" name="subtopic" placeholder="New subtopic" aria-label="Add subtopic" required />
+          <label class="slider slider--mini">
+            <input type="range" min="1" max="5" step="1" name="confidence" value="3" />
+            <span class="slider__value">3/5</span>
+          </label>
+          <input type="date" name="updatedAt" />
           <button type="submit" class="ghost">add sub</button>
         </form>
       </div>
@@ -142,7 +291,7 @@ function renderSubjects(list) {
     const trend = trendCopy[subject.trend] || trendCopy.steady;
     const tag = tagCopy[subject.tag] || subject.tag;
     const card = document.createElement("article");
-    card.className = "card";
+    card.className = "card fade-in";
     card.dataset.subjectId = subject.id;
     card.innerHTML = `
       <div class="card__rail">
@@ -151,24 +300,60 @@ function renderSubjects(list) {
         <span class="pill pill--ghost">${subject.topics.length} topic${subject.topics.length === 1 ? "" : "s"}</span>
       </div>
       <div class="card__body">
-        <div class="card__title">${subject.name}</div>
+        <div class="card__header">
+          <div>
+            <div class="card__title-row">
+              <input class="inline-input subject-title" value="${subject.name}" data-subject="${subject.id}" ${editMode ? "" : "readonly"} />
+              <div class="card__actions manage-only">
+                <button class="ghost icon delete-subject" data-subject="${subject.id}" aria-label="Delete subject">✕</button>
+              </div>
+            </div>
+            <div class="card__meta">
+              <span class="pill">${tag}</span>
+              <span class="note">focus: <input class="inline-input subject-focus" value="${subject.focus}" data-subject="${subject.id}" ${editMode ? "" : "readonly"} /></span>
+            </div>
+          </div>
+        </div>
         <div class="card__meter">
           ${dotMeter(subject.confidence)}
-          <label class="slider">
-            <input type="range" min="1" max="5" step="1" value="${subject.confidence}" class="confidence-slider" data-id="${subject.id}" aria-label="${subject.name} confidence" />
-            <span class="slider__value">${subject.confidence}/5</span>
-          </label>
+          <div class="control">
+            <label class="slider">
+              <input type="range" min="1" max="5" step="1" value="${subject.confidence}" class="confidence-slider" data-scope="subject" data-id="${subject.id}" aria-label="${subject.name} confidence" />
+              <span class="slider__value">${subject.confidence}/5</span>
+            </label>
+            <div class="date-control">
+              <label class="micro__label">updated</label>
+              <input type="date" class="date-input" data-scope="subject" data-id="${subject.id}" value="${subject.updatedAt || today()}" />
+            </div>
+          </div>
         </div>
-        <div class="card__meta">
-          <span class="pill">${tag}</span>
-          <span class="note">focus: ${subject.focus}</span>
+        <div class="card__meta card__meta--spread manage-only">
+          <label class="micro__label">trend</label>
+          <select class="inline-select subject-trend" data-subject="${subject.id}">
+            <option value="steady" ${subject.trend === "steady" ? "selected" : ""}>steady</option>
+            <option value="rising" ${subject.trend === "rising" ? "selected" : ""}>rising</option>
+            <option value="volatile" ${subject.trend === "volatile" ? "selected" : ""}>volatile</option>
+          </select>
+          <label class="micro__label">tag</label>
+          <select class="inline-select subject-tag" data-subject="${subject.id}">
+            <option value="steady" ${subject.tag === "steady" ? "selected" : ""}>solid</option>
+            <option value="building" ${subject.tag === "building" ? "selected" : ""}>warming up</option>
+            <option value="hold" ${subject.tag === "hold" ? "selected" : ""}>hold line</option>
+            <option value="watch" ${subject.tag === "watch" ? "selected" : ""}>needs focus</option>
+            <option value="calm" ${subject.tag === "calm" ? "selected" : ""}>quiet</option>
+          </select>
         </div>
         <div class="card__topics">
           <p class="micro__label">topics</p>
           <div class="topics">${topicList(subject.topics, subject.id)}</div>
-          <form class="topic-form" data-subject="${subject.id}">
+          <form class="topic-form manage-only" data-subject="${subject.id}">
             <input type="text" name="topic" placeholder="New topic" aria-label="Add topic" required />
+            <label class="slider">
+              <input type="range" min="1" max="5" step="1" name="confidence" value="3" />
+              <span class="slider__value">3/5</span>
+            </label>
             <input type="text" name="subtopics" placeholder="Subtopics (comma separated)" aria-label="Subtopics" />
+            <input type="date" name="updatedAt" />
             <button type="submit" class="primary">add topic</button>
           </form>
         </div>
@@ -262,6 +447,14 @@ function toggleTheme() {
   document.body.classList.toggle("dark");
 }
 
+function toggleManage() {
+  editMode = !editMode;
+  document.body.classList.toggle("editing", editMode);
+  manageToggle.classList.toggle("primary", editMode);
+  manageToggle.textContent = editMode ? "done" : "manage";
+  applyFilters();
+}
+
 function setAccent(color, target) {
   document.documentElement.style.setProperty("--accent", color);
   document.documentElement.style.setProperty("--accent-soft", `${color}1a`);
@@ -286,64 +479,249 @@ function applyFilters() {
   renderSubjects(filtered);
 }
 
-function handleConfidenceChange(id, value) {
-  subjects = subjects.map((item) =>
-    item.id === id ? { ...item, confidence: Number(value) } : item
-  );
+function updateSubjectField(id, updater) {
+  subjects = subjects.map((item) => (item.id === id ? updater(item) : item));
   applyFilters();
+}
+
+function updateTopic(subjectId, topicId, updater) {
+  updateSubjectField(subjectId, (subject) => ({
+    ...subject,
+    topics: subject.topics.map((topic) =>
+      topic.id === topicId ? updater(topic) : topic
+    ),
+  }));
+}
+
+function updateSubtopic(subjectId, topicId, subtopicId, updater) {
+  updateTopic(subjectId, topicId, (topic) => ({
+    ...topic,
+    subtopics: topic.subtopics.map((sub) =>
+      sub.id === subtopicId ? updater(sub) : sub
+    ),
+  }));
+}
+
+function handleConfidenceChange(target) {
+  syncSliderLabel(target);
+  const scope = target.dataset.scope;
+  const value = Number(target.value);
+  const container = target.closest(".control, .subtopic__controls") || target.parentElement;
+  const dateInput = container?.querySelector(".date-input");
+  const updatedAt = dateInput?.value || today();
+
+  if (scope === "subject") {
+    const id = target.dataset.id;
+    updateSubjectField(id, (item) => ({ ...item, confidence: value, updatedAt }));
+  }
+
+  if (scope === "topic") {
+    const subjectId = target.dataset.subject;
+    const topicId = target.dataset.topicId;
+    updateTopic(subjectId, topicId, (topic) => ({ ...topic, confidence: value, updatedAt }));
+  }
+
+  if (scope === "subtopic") {
+    const subjectId = target.dataset.subject;
+    const topicId = target.dataset.topicId;
+    const subtopicId = target.dataset.subtopicId;
+    updateSubtopic(subjectId, topicId, subtopicId, (sub) => ({ ...sub, confidence: value, updatedAt }));
+  }
+}
+
+function handleDateChange(target) {
+  const scope = target.dataset.scope;
+  const updatedAt = target.value || today();
+
+  if (scope === "subject") {
+    updateSubjectField(target.dataset.id, (item) => ({ ...item, updatedAt }));
+  }
+  if (scope === "topic") {
+    updateTopic(target.dataset.subject, target.dataset.topicId, (topic) => ({ ...topic, updatedAt }));
+  }
+  if (scope === "subtopic") {
+    updateSubtopic(target.dataset.subject, target.dataset.topicId, target.dataset.subtopicId, (sub) => ({ ...sub, updatedAt }));
+  }
 }
 
 function handleTopicAdd(form) {
   const subjectId = form.dataset.subject;
   const title = form.topic.value.trim();
+  const confidence = Number(form.confidence.value || 3);
+  const updatedAt = form.updatedAt.value || today();
   const subtopicsRaw = form.subtopics.value.trim();
   if (!title) return;
 
   const subtopics = subtopicsRaw
-    ? subtopicsRaw.split(",").map((s) => s.trim()).filter(Boolean)
+    ? subtopicsRaw.split(",").map((s) => s.trim()).filter(Boolean).map((title) => ({
+        id: makeId(),
+        title,
+        confidence,
+        updatedAt,
+      }))
     : [];
 
-  subjects = subjects.map((subject) => {
-    if (subject.id !== subjectId) return subject;
-    const nextTopics = [...subject.topics, { title, subtopics }];
-    return { ...subject, topics: nextTopics };
-  });
+  updateSubjectField(subjectId, (subject) => ({
+    ...subject,
+    topics: [
+      ...subject.topics,
+      {
+        id: makeId(),
+        title,
+        confidence,
+        updatedAt,
+        subtopics,
+      },
+    ],
+  }));
+
+  form.reset();
+}
+
+function handleSubtopicAdd(form) {
+  const subjectId = form.dataset.subject;
+  const topicId = form.dataset.topicId;
+  const subtopic = form.subtopic.value.trim();
+  const confidence = Number(form.confidence.value || 3);
+  const updatedAt = form.updatedAt.value || today();
+  if (!subtopic) return;
+
+  updateTopic(subjectId, topicId, (topic) => ({
+    ...topic,
+    subtopics: [...topic.subtopics, { id: makeId(), title: subtopic, confidence, updatedAt }],
+  }));
+
+  form.reset();
+}
+
+function handleSubjectAdd(form) {
+  const name = form.name.value.trim();
+  if (!name) return;
+
+  const confidence = Number(form.confidence.value || 3);
+  const trend = form.trend.value || "steady";
+  const focus = form.focus.value.trim() || "new focus";
+  const tag = form.tag.value || "steady";
+  const updatedAt = form.updatedAt.value || today();
+
+  subjects = [
+    ...subjects,
+    {
+      id: makeId(),
+      name,
+      confidence,
+      trend,
+      focus,
+      tag,
+      updatedAt,
+      topics: [],
+    },
+  ];
 
   form.reset();
   applyFilters();
 }
 
-function handleSubtopicAdd(form) {
-  const subjectId = form.dataset.subject;
-  const topicIndex = Number(form.dataset.topicIndex);
-  const subtopic = form.subtopic.value.trim();
-  if (!subtopic) return;
-
-  subjects = subjects.map((subject) => {
-    if (subject.id !== subjectId) return subject;
-    const topics = subject.topics.map((topic, idx) =>
-      idx === topicIndex
-        ? { ...topic, subtopics: [...topic.subtopics, subtopic] }
-        : topic
-    );
-    return { ...subject, topics };
-  });
-
-  form.reset();
+function handleSubjectDelete(subjectId) {
+  subjects = subjects.filter((s) => s.id !== subjectId);
   applyFilters();
+}
+
+function handleTopicDelete(subjectId, topicId) {
+  updateSubjectField(subjectId, (subject) => ({
+    ...subject,
+    topics: subject.topics.filter((topic) => topic.id !== topicId),
+  }));
+}
+
+function handleSubtopicDelete(subjectId, topicId, subtopicId) {
+  updateTopic(subjectId, topicId, (topic) => ({
+    ...topic,
+    subtopics: topic.subtopics.filter((sub) => sub.id !== subtopicId),
+  }));
+}
+
+function handleTextEdit(target) {
+  const value = target.value.trim();
+
+  if (!editMode) return;
+
+  if (target.classList.contains("subject-title")) {
+    updateSubjectField(target.dataset.subject, (subject) => ({ ...subject, name: value || "Untitled" }));
+  }
+  if (target.classList.contains("subject-focus")) {
+    updateSubjectField(target.dataset.subject, (subject) => ({ ...subject, focus: value }));
+  }
+  if (target.classList.contains("topic-title")) {
+    updateTopic(target.dataset.subject, target.dataset.topicId, (topic) => ({ ...topic, title: value || "Topic" }));
+  }
+  if (target.classList.contains("subtopic-title")) {
+    updateSubtopic(target.dataset.subject, target.dataset.topicId, target.dataset.subtopicId, (sub) => ({ ...sub, title: value || "Subtopic" }));
+  }
+}
+
+function handleSelectChange(target) {
+  if (!editMode) return;
+
+  if (target.classList.contains("subject-trend")) {
+    updateSubjectField(target.dataset.subject, (subject) => ({ ...subject, trend: target.value }));
+  }
+  if (target.classList.contains("subject-tag")) {
+    updateSubjectField(target.dataset.subject, (subject) => ({ ...subject, tag: target.value }));
+  }
 }
 
 function init() {
   renderSubjects(subjects);
   themeToggle.addEventListener("click", toggleTheme);
   shuffleButton.addEventListener("click", shuffleSubjects);
+  manageToggle.addEventListener("click", toggleManage);
   filterSearch.addEventListener("input", applyFilters);
   filterMin.addEventListener("change", applyFilters);
   filterTrend.addEventListener("change", applyFilters);
 
+  subjectForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    handleSubjectAdd(event.target);
+  });
+
+  subjectForm.addEventListener("input", (event) => {
+    if (event.target.type === "range") {
+      syncSliderLabel(event.target);
+    }
+  });
+
+  if (subjectForm.updatedAt) {
+    subjectForm.updatedAt.value = today();
+  }
+
   subjectList.addEventListener("input", (event) => {
     if (event.target.matches(".confidence-slider")) {
-      handleConfidenceChange(event.target.dataset.id, event.target.value);
+      handleConfidenceChange(event.target);
+    }
+    if (event.target.matches(".date-input")) {
+      handleDateChange(event.target);
+    }
+    if (event.target.matches(".inline-input")) {
+      handleTextEdit(event.target);
+    }
+    if (event.target.matches(".inline-select")) {
+      handleSelectChange(event.target);
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    if (event.target.type === "range") {
+      syncSliderLabel(event.target);
+    }
+  });
+
+  subjectList.addEventListener("change", (event) => {
+    if (event.target.matches(".inline-select")) {
+      handleSelectChange(event.target);
+    }
+    if (event.target.matches(".date-input")) {
+      handleDateChange(event.target);
     }
   });
 
@@ -354,6 +732,21 @@ function init() {
     }
     if (event.target.matches(".subtopic-form")) {
       handleSubtopicAdd(event.target);
+    }
+  });
+
+  subjectList.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target.closest(".delete-subject")) {
+      handleSubjectDelete(target.closest(".delete-subject").dataset.subject);
+    }
+    if (target.closest(".delete-topic")) {
+      const btn = target.closest(".delete-topic");
+      handleTopicDelete(btn.dataset.subject, btn.dataset.topicId);
+    }
+    if (target.closest(".delete-subtopic")) {
+      const btn = target.closest(".delete-subtopic");
+      handleSubtopicDelete(btn.dataset.subject, btn.dataset.topicId, btn.dataset.subtopicId);
     }
   });
 

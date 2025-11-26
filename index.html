@@ -24,6 +24,7 @@
         </div>
         <div class="topbar__actions">
           <button class="ghost" id="toggle-theme" aria-label="Toggle theme">light / dark</button>
+          <button class="ghost" id="manage-mode" aria-label="Manage subjects">manage</button>
           <button class="primary" id="shuffle" aria-label="Shuffle signals">shuffle</button>
           <div class="swatches" role="group" aria-label="Accent">
             <button class="swatch swatch--active" data-accent="#00DFA3" aria-label="Mint"></button>
@@ -80,6 +81,31 @@
               <h2>Subjects</h2>
             </div>
             <div class="chip" id="summary-chip">avg 0.0 / 5</div>
+          </div>
+          <div class="manage manage--add">
+            <p class="micro__label">add subject</p>
+            <form id="subject-form" class="subject-form">
+              <input type="text" name="name" placeholder="Subject name" required />
+              <input type="text" name="focus" placeholder="Focus area" />
+              <select name="trend">
+                <option value="steady">steady</option>
+                <option value="rising">rising</option>
+                <option value="volatile">volatile</option>
+              </select>
+              <select name="tag">
+                <option value="steady">solid</option>
+                <option value="building">warming up</option>
+                <option value="hold">hold line</option>
+                <option value="watch">needs focus</option>
+                <option value="calm">quiet</option>
+              </select>
+              <label class="slider">
+                <input type="range" min="1" max="5" step="1" name="confidence" value="3" />
+                <span class="slider__value">3/5</span>
+              </label>
+              <input type="date" name="updatedAt" />
+              <button type="submit" class="primary">save subject</button>
+            </form>
           </div>
           <div class="filters">
             <div class="filter">
