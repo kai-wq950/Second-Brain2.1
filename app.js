@@ -1,141 +1,56 @@
-const subjectList = document.getElementById("subject-list");
-const signalsRoot = document.getElementById("signals");
-const themeToggle = document.getElementById("toggle-theme");
-const shuffleButton = document.getElementById("shuffle");
-const summaryChip = document.getElementById("summary-chip");
-const metricAvg = document.getElementById("metric-avg");
-const metricStable = document.getElementById("metric-stable");
-const metricVolatile = document.getElementById("metric-volatile");
-const swatches = document.querySelectorAll(".swatch");
-const filterSearch = document.getElementById("filter-search");
-const filterMin = document.getElementById("filter-min");
-const filterTrend = document.getElementById("filter-trend");
-const manageToggle = document.getElementById("manage-mode");
-const subjectForm = document.getElementById("subject-form");
+const STORAGE_KEY = "secondbrain-mock-topics-v2";
+const MOCK_DATE = "2024-12-01"; // edit this date to change countdown
 
+const els = {
+  subjectCards: document.getElementById("subject-cards"),
+  weakTopics: document.getElementById("weak-topics"),
+  countdown: document.getElementById("countdown"),
+  overall: document.getElementById("overall-progress"),
+  views: document.querySelectorAll("[data-view]"),
+  sectionsRoot: document.getElementById("section-list"),
+  subjectPicker: document.getElementById("subject-picker"),
+  sessionModal: document.getElementById("session-modal"),
+  topicModal: document.getElementById("topic-modal"),
+  openLog: document.getElementById("open-log"),
+  closeLog: document.getElementById("close-log"),
+  sessionForm: document.getElementById("session-form"),
+  sessionSubject: document.getElementById("session-subject"),
+  sessionSection: document.getElementById("session-section"),
+  sessionTopic: document.getElementById("session-topic"),
+  sessionOutcome: document.getElementById("session-outcome"),
+  topicModalTitle: document.getElementById("topic-modal-title"),
+  topicNotes: document.getElementById("topic-notes"),
+  topicLinks: document.getElementById("topic-links"),
+  saveTopic: document.getElementById("save-topic"),
+  closeTopic: document.getElementById("close-topic"),
+  themeToggle: document.getElementById("toggle-theme"),
+};
+
+const today = () => new Date().toISOString().slice(0, 10);
 const makeId = () =>
   (typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
-const today = () => new Date().toISOString().slice(0, 10);
-
-let editMode = false;
-
-const average = (values) =>
-  values.length ? values.reduce((sum, val) => sum + Number(val), 0) / values.length : 0;
-
-function computeTopicStats(topic) {
-  const subtopics = (topic.subtopics || []).map((sub) => ({
-    ...sub,
-    confidence: Number(sub.confidence),
-    updatedAt: sub.updatedAt || today(),
-  }));
-
-  const computedConfidence = subtopics.length
-    ? Number(average(subtopics.map((sub) => sub.confidence)).toFixed(1))
-    : Number(topic.confidence);
-
-  const computedUpdatedAt = subtopics.length
-    ? subtopics.reduce(
-        (latest, sub) => (sub.updatedAt > latest ? sub.updatedAt : latest),
-        subtopics[0].updatedAt
-      )
-    : topic.updatedAt || today();
-
-  return {
-    ...topic,
-    subtopics,
-    computedConfidence,
-    computedUpdatedAt,
-  };
-}
-
-function computeSubjectStats(subject) {
-  const topics = (subject.topics || []).map(computeTopicStats);
-
-  const computedConfidence = topics.length
-    ? Number(average(topics.map((topic) => topic.computedConfidence)).toFixed(1))
-    : Number(subject.confidence);
-
-  const computedUpdatedAt = topics.length
-    ? topics.reduce(
-        (latest, topic) => (topic.computedUpdatedAt > latest ? topic.computedUpdatedAt : latest),
-        topics[0].computedUpdatedAt
-      )
-    : subject.updatedAt || today();
-
-  return {
-    ...subject,
-    topics,
-    computedConfidence,
-    computedUpdatedAt,
-  };
-}
-
-const deriveSubjects = () => subjects.map(computeSubjectStats);
-
-let subjects = [
+const defaultSubjects = [
   {
     id: makeId(),
     name: "Mathematics",
-    confidence: 4,
-    trend: "rising",
-    focus: "calculus timing & error trimming",
-    tag: "steady",
-    updatedAt: today(),
-    topics: [
+    sections: [
       {
         id: makeId(),
-        title: "Calculus",
-        confidence: 4,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "limits", confidence: 4, updatedAt: today() },
-          { id: makeId(), title: "integration by parts", confidence: 3, updatedAt: today() },
-          { id: makeId(), title: "series", confidence: 3, updatedAt: today() },
+        name: "Core",
+        topics: [
+          { id: makeId(), name: "Differentiation", mastery: 3, lastReviewed: today(), notes: "Chain rule accuracy", links: [] },
+          { id: makeId(), name: "Integration", mastery: 2, lastReviewed: today(), notes: "By parts practice", links: [] },
         ],
       },
       {
         id: makeId(),
-        title: "Probability",
-        confidence: 3,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "binomial", confidence: 3, updatedAt: today() },
-          { id: makeId(), title: "normal", confidence: 2, updatedAt: today() },
-          { id: makeId(), title: "combinatorics drills", confidence: 3, updatedAt: today() },
-        ],
-      },
-    ],
-  },
-  {
-    id: makeId(),
-    name: "Further Maths",
-    confidence: 3,
-    trend: "rising",
-    focus: "complex numbers & matrices",
-    tag: "building",
-    updatedAt: today(),
-    topics: [
-      {
-        id: makeId(),
-        title: "Matrices",
-        confidence: 3,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "row reduction", confidence: 3, updatedAt: today() },
-          { id: makeId(), title: "inverse proofs", confidence: 2, updatedAt: today() },
-        ],
-      },
-      {
-        id: makeId(),
-        title: "Complex",
-        confidence: 3,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "arg diagrams", confidence: 2, updatedAt: today() },
-          { id: makeId(), title: "De Moivre", confidence: 3, updatedAt: today() },
+        name: "Statistics",
+        topics: [
+          { id: makeId(), name: "Normal distributions", mastery: 2, lastReviewed: today(), notes: "Tail areas", links: [] },
+          { id: makeId(), name: "Regression", mastery: 3, lastReviewed: today(), notes: "Interpret gradients", links: [] },
         ],
       },
     ],
@@ -143,691 +58,393 @@ let subjects = [
   {
     id: makeId(),
     name: "Physics",
-    confidence: 3,
-    trend: "steady",
-    focus: "multi-mark reasoning & graphs",
-    tag: "hold",
-    updatedAt: today(),
-    topics: [
+    sections: [
       {
         id: makeId(),
-        title: "Mechanics",
-        confidence: 3,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "projectiles", confidence: 3, updatedAt: today() },
-          { id: makeId(), title: "moments", confidence: 3, updatedAt: today() },
-          { id: makeId(), title: "power", confidence: 2, updatedAt: today() },
+        name: "Mechanics",
+        topics: [
+          { id: makeId(), name: "Projectiles", mastery: 3, lastReviewed: today(), notes: "Resolve components", links: [] },
+          { id: makeId(), name: "Moments", mastery: 4, lastReviewed: today(), notes: "Couples + supports", links: [] },
         ],
       },
       {
         id: makeId(),
-        title: "Fields",
-        confidence: 3,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "electric", confidence: 2, updatedAt: today() },
-          { id: makeId(), title: "gravitational", confidence: 3, updatedAt: today() },
+        name: "Electricity",
+        topics: [
+          { id: makeId(), name: "Kirchhoff", mastery: 2, lastReviewed: today(), notes: "Loop sign discipline", links: [] },
+          { id: makeId(), name: "Capacitance", mastery: 1, lastReviewed: today(), notes: "Energy steps", links: [] },
         ],
       },
     ],
   },
   {
     id: makeId(),
-    name: "Computer Science",
-    confidence: 2,
-    trend: "volatile",
-    focus: "time complexity & trace logic",
-    tag: "watch",
-    updatedAt: today(),
-    topics: [
+    name: "Further Maths",
+    sections: [
       {
         id: makeId(),
-        title: "Algorithms",
-        confidence: 2,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "dfs/bfs", confidence: 2, updatedAt: today() },
-          { id: makeId(), title: "sorting", confidence: 2, updatedAt: today() },
-          { id: makeId(), title: "complexity", confidence: 2, updatedAt: today() },
+        name: "Matrices",
+        topics: [
+          { id: makeId(), name: "Row reduction", mastery: 2, lastReviewed: today(), notes: "Pivot order", links: [] },
+          { id: makeId(), name: "Eigenvalues", mastery: 2, lastReviewed: today(), notes: "Characteristic poly", links: [] },
         ],
       },
       {
         id: makeId(),
-        title: "OOP",
-        confidence: 2,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "design patterns", confidence: 2, updatedAt: today() },
-          { id: makeId(), title: "encapsulation", confidence: 2, updatedAt: today() },
-        ],
-      },
-    ],
-  },
-  {
-    id: makeId(),
-    name: "English",
-    confidence: 4,
-    trend: "steady",
-    focus: "thesis clarity & concise edits",
-    tag: "calm",
-    updatedAt: today(),
-    topics: [
-      {
-        id: makeId(),
-        title: "Analysis",
-        confidence: 4,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "theme tracing", confidence: 4, updatedAt: today() },
-          { id: makeId(), title: "quote selection", confidence: 4, updatedAt: today() },
-        ],
-      },
-      {
-        id: makeId(),
-        title: "Practice",
-        confidence: 4,
-        updatedAt: today(),
-        subtopics: [
-          { id: makeId(), title: "timed essays", confidence: 4, updatedAt: today() },
-          { id: makeId(), title: "structure", confidence: 4, updatedAt: today() },
+        name: "Complex Numbers",
+        topics: [
+          { id: makeId(), name: "Arg diagrams", mastery: 3, lastReviewed: today(), notes: "Principal value", links: [] },
+          { id: makeId(), name: "De Moivre", mastery: 3, lastReviewed: today(), notes: "nth roots", links: [] },
         ],
       },
     ],
   },
 ];
 
-const trendCopy = {
-  rising: { label: "rising", emoji: "▴", className: "status--up" },
-  steady: { label: "steady", emoji: "•", className: "status--steady" },
-  volatile: { label: "volatile", emoji: "◦", className: "status--alert" },
-};
+let subjects = loadSubjects();
+let activeSubjectId = subjects[0]?.id;
+let activeTopicPath = null;
 
-const tagCopy = {
-  steady: "solid",
-  building: "warming up",
-  hold: "hold line",
-  watch: "needs focus",
-  calm: "quiet",
-};
-
-function dotMeter(value) {
-  const dots = Array.from({ length: 5 }, (_, i) => {
-    const active = i < value ? "dot dot--on" : "dot";
-    return `<span class="${active}"></span>`;
-  }).join("");
-
-  return `<div class="meter" aria-label="confidence ${value} of 5">${dots}</div>`;
+function loadSubjects() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch (err) {
+    console.warn("Could not load subjects", err);
+  }
+  return JSON.parse(JSON.stringify(defaultSubjects));
 }
 
-function syncSliderLabel(target) {
-  const wrapper = target.closest(".slider");
-  const label = wrapper?.querySelector(".slider__value");
-  if (label) {
-    label.textContent = `${target.value}/5`;
-  }
+function persistSubjects() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(subjects));
 }
 
-function topicList(topics, subjectId) {
-  if (!topics?.length) {
-    return `<div class="topic topic--empty">No topics yet. Add one below.</div>`;
-  }
+function average(values) {
+  return values.length ? values.reduce((sum, n) => sum + Number(n), 0) / values.length : 0;
+}
 
-  return topics
-    .map(
-      (topic) => `
-      <div class="topic" data-subject="${subjectId}" data-topic-id="${topic.id}">
-        <div class="topic__header">
-          <div>
-            <p class="micro__label">topic</p>
-            <input class="inline-input topic-title" value="${topic.title}" data-subject="${subjectId}" data-topic-id="${topic.id}" ${editMode ? "" : "readonly"} />
-          </div>
-          <div class="topic__actions manage-only">
-            <button class="ghost icon delete-topic" data-subject="${subjectId}" data-topic-id="${topic.id}" aria-label="Delete topic">✕</button>
-          </div>
-        </div>
-      <div class="topic__meta">
-          ${dotMeter(topic.computedConfidence)}
-          <div class="control view-only">
-            <div class="readout">
-              <span class="readout__value">${topic.computedConfidence}/5</span>
-              <span class="pill pill--date">${topic.computedUpdatedAt}</span>
-            </div>
-          </div>
-          <div class="control edit-only">
-            ${
-              topic.subtopics.length
-                ? `<span class="note">auto · avg of subtopics</span>`
-                : `<label class="slider">
-                    <input type=\"range\" min=\"1\" max=\"5\" step=\"1\" value=\"${topic.confidence}\" class=\"confidence-slider\" data-scope=\"topic\" data-topic-id=\"${topic.id}\" data-subject=\"${subjectId}\" aria-label=\"${topic.title} confidence\" />
-                    <span class=\"slider__value\">${topic.confidence}/5</span>
-                  </label>`
-            }
-            <div class="date-control">
-              <label class="micro__label">updated</label>
-              <input type="date" class="date-input" data-scope="topic" data-topic-id="${topic.id}" data-subject="${subjectId}" value="${topic.updatedAt || today()}" />
-            </div>
-          </div>
-        </div>
-        <div class="topic__subs">
-          ${
-            topic.subtopics.length
-              ? topic.subtopics
-                  .map(
-                    (sub) => `
-                    <div class="subtopic" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}">
-                      <input class="inline-input subtopic-title" value="${sub.title}" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" ${editMode ? "" : "readonly"} />
-                      <div class="subtopic__controls view-only">
-                        <span class="pill">${sub.confidence}/5</span>
-                        <span class="pill pill--date">${sub.updatedAt || today()}</span>
-                      </div>
-                      <div class="subtopic__controls edit-only">
-                        <label class="slider slider--mini">
-                          <input type="range" min="1" max="5" step="1" value="${sub.confidence}" class="confidence-slider" data-scope="subtopic" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" aria-label="${sub.title} confidence" />
-                          <span class="slider__value">${sub.confidence}/5</span>
-                        </label>
-                        <input type="date" class="date-input" data-scope="subtopic" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" value="${sub.updatedAt || today()}" />
-                        <button class="ghost icon delete-subtopic manage-only" data-subtopic-id="${sub.id}" data-topic-id="${topic.id}" data-subject="${subjectId}" aria-label="Delete subtopic">✕</button>
-                      </div>
-                    </div>
-                  `
-                  )
-                  .join("")
-              : `<span class="note">add a subtopic below</span>`
-          }
-        </div>
-        <form class="subtopic-form manage-only" data-subject="${subjectId}" data-topic-id="${topic.id}">
-          <input type="text" name="subtopic" placeholder="New subtopic" aria-label="Add subtopic" required />
-          <label class="slider slider--mini">
-            <input type="range" min="1" max="5" step="1" name="confidence" value="3" />
-            <span class="slider__value">3/5</span>
-          </label>
-          <input type="date" name="updatedAt" />
-          <button type="submit" class="ghost">add sub</button>
-        </form>
+function daysUntilMock() {
+  const ms = new Date(MOCK_DATE) - new Date();
+  return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+}
+
+function computeSubjectProgress(subject) {
+  const topicMasteries = subject.sections.flatMap((section) => section.topics.map((t) => t.mastery || 0));
+  return Math.round((average(topicMasteries) / 5) * 100);
+}
+
+function masteryDots(value, onChange) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "mastery";
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = `dot ${i <= value ? "dot--filled" : ""}`;
+    dot.setAttribute("aria-label", `Set mastery to ${i}`);
+    dot.addEventListener("click", (event) => {
+      event.stopPropagation();
+      onChange(i);
+    });
+    wrapper.appendChild(dot);
+  }
+  return wrapper;
+}
+
+function renderDashboard() {
+  els.countdown.textContent = daysUntilMock();
+  const overall = Math.round(
+    average(subjects.map((subject) => computeSubjectProgress(subject)))
+  );
+  els.overall.textContent = `Overall ${overall}%`;
+
+  els.subjectCards.innerHTML = "";
+  subjects.forEach((subject) => {
+    const card = document.createElement("article");
+    card.className = "card subject-card";
+    const progress = computeSubjectProgress(subject);
+    card.innerHTML = `
+      <div class="card__row">
+        <h3>${subject.name}</h3>
+        <span class="pill">${progress}%</span>
       </div>
-    `
+      <div class="progress"><span style="width:${progress}%"></span></div>
+      <p class="micro__hint">${subject.sections.length} sections · ${subject.sections.reduce(
+      (sum, s) => sum + s.topics.length,
+      0
+    )} topics</p>
+    `;
+    card.addEventListener("click", () => switchView("subjects", subject.id));
+    els.subjectCards.appendChild(card);
+  });
+
+  const allTopics = subjects.flatMap((subject) =>
+    subject.sections.flatMap((section) =>
+      section.topics.map((topic) => ({ subject, section, topic }))
     )
+  );
+  const weakest = allTopics.sort((a, b) => (a.topic.mastery ?? 0) - (b.topic.mastery ?? 0)).slice(0, 6);
+  els.weakTopics.innerHTML = "";
+  weakest.forEach(({ subject, section, topic }) => {
+    const row = document.createElement("div");
+    row.className = "list__item";
+    const meta = document.createElement("div");
+    meta.className = "list__meta";
+    meta.innerHTML = `<p class="micro__label">${subject.name} — ${section.name}</p><h4>${topic.name}</h4>`;
+    const right = document.createElement("div");
+    right.className = "list__right";
+    const dots = masteryDots(topic.mastery || 0, (val) => updateMastery(subject.id, section.id, topic.id, val));
+    const last = document.createElement("span");
+    last.className = "chip chip--quiet";
+    last.textContent = `Last: ${topic.lastReviewed || "–"}`;
+    right.append(dots, last);
+    row.append(meta, right);
+    row.addEventListener("click", () => focusTopic(subject.id, section.id, topic.id));
+    els.weakTopics.appendChild(row);
+  });
+}
+
+function renderSubjectsView() {
+  els.subjectPicker.innerHTML = subjects
+    .map((s) => `<option value="${s.id}" ${s.id === activeSubjectId ? "selected" : ""}>${s.name}</option>`)
+    .join("");
+
+  const activeSubject = subjects.find((s) => s.id === activeSubjectId);
+  if (!activeSubject) return;
+
+  els.sectionsRoot.innerHTML = "";
+  activeSubject.sections.forEach((section) => {
+    const card = document.createElement("article");
+    card.className = "card section-card";
+    card.innerHTML = `
+      <div class="card__row">
+        <h3>${section.name}</h3>
+        <span class="micro__hint">${section.topics.length} topics</span>
+      </div>
+    `;
+
+    section.topics.forEach((topic) => {
+      const row = document.createElement("div");
+      row.className = "topic-row";
+      row.dataset.topic = topic.id;
+      const left = document.createElement("div");
+      left.className = "topic-row__left";
+      const name = document.createElement("h4");
+      name.textContent = topic.name;
+      const last = document.createElement("span");
+      last.className = "chip chip--quiet";
+      last.textContent = `Last: ${topic.lastReviewed || "–"}`;
+      left.append(name, last);
+
+      const right = document.createElement("div");
+      right.className = "topic-row__right";
+      right.appendChild(
+        masteryDots(topic.mastery || 0, (val) => updateMastery(activeSubject.id, section.id, topic.id, val))
+      );
+      const openDetail = document.createElement("button");
+      openDetail.type = "button";
+      openDetail.className = "ghost";
+      openDetail.textContent = "notes";
+      openDetail.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openTopicDetail(activeSubject.id, section.id, topic.id);
+      });
+      right.appendChild(openDetail);
+
+      row.append(left, right);
+      card.appendChild(row);
+    });
+
+    els.sectionsRoot.appendChild(card);
+  });
+}
+
+function updateMastery(subjectId, sectionId, topicId, value) {
+  subjects = subjects.map((subject) => {
+    if (subject.id !== subjectId) return subject;
+    return {
+      ...subject,
+      sections: subject.sections.map((section) => {
+        if (section.id !== sectionId) return section;
+        return {
+          ...section,
+          topics: section.topics.map((topic) =>
+            topic.id === topicId
+              ? { ...topic, mastery: value, lastReviewed: today() }
+              : topic
+          ),
+        };
+      }),
+    };
+  });
+  persistSubjects();
+  render();
+}
+
+function switchView(view, subjectId) {
+  document.querySelectorAll(".view").forEach((el) => el.classList.remove("view--active"));
+  document.getElementById(view).classList.add("view--active");
+  els.views.forEach((btn) => btn.removeAttribute("aria-current"));
+  const btn = document.querySelector(`[data-view="${view}"]`);
+  if (btn) btn.setAttribute("aria-current", "true");
+  if (subjectId) activeSubjectId = subjectId;
+  render();
+}
+
+function focusTopic(subjectId, sectionId, topicId) {
+  activeSubjectId = subjectId;
+  switchView("subjects");
+  setTimeout(() => {
+    const target = document.querySelector(`[data-topic="${topicId}"]`);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 50);
+}
+
+function openModal(modal) {
+  modal.setAttribute("aria-hidden", "false");
+}
+function closeModal(modal) {
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function openSessionModal() {
+  populateSessionSubjects();
+  populateSessionSections();
+  openModal(els.sessionModal);
+}
+
+function populateSessionSubjects() {
+  els.sessionSubject.innerHTML = subjects.map((s) => `<option value="${s.id}">${s.name}</option>`).join("");
+}
+
+function populateSessionSections() {
+  const subject = subjects.find((s) => s.id === els.sessionSubject.value) || subjects[0];
+  if (!subject) return;
+  els.sessionSection.innerHTML = subject.sections
+    .map((section) => `<option value="${section.id}">${section.name}</option>`)
+    .join("");
+  populateSessionTopics();
+}
+
+function populateSessionTopics() {
+  const subject = subjects.find((s) => s.id === els.sessionSubject.value) || subjects[0];
+  if (!subject) return;
+  const section = subject.sections.find((sec) => sec.id === els.sessionSection.value) || subject.sections[0];
+  if (!section) return;
+  els.sessionTopic.innerHTML = section.topics
+    .map((topic) => `<option value="${topic.id}">${topic.name}</option>`)
     .join("");
 }
 
-function renderSubjects(list) {
-  subjectList.innerHTML = "";
+function openTopicDetail(subjectId, sectionId, topicId) {
+  activeTopicPath = { subjectId, sectionId, topicId };
+  const topic = subjects
+    .find((s) => s.id === subjectId)
+    ?.sections.find((s) => s.id === sectionId)
+    ?.topics.find((t) => t.id === topicId);
+  if (!topic) return;
+  els.topicModalTitle.textContent = topic.name;
+  els.topicNotes.value = topic.notes || "";
+  els.topicLinks.value = (topic.links || []).join("\n");
+  openModal(els.topicModal);
+}
 
-  list.forEach((subject, index) => {
-    const trend = trendCopy[subject.trend] || trendCopy.steady;
-    const tag = tagCopy[subject.tag] || subject.tag;
-    const card = document.createElement("article");
-    card.className = "card fade-in";
-    card.dataset.subjectId = subject.id;
-    card.innerHTML = `
-      <div class="card__rail">
-        <span class="rail__index">${String(index + 1).padStart(2, "0")}</span>
-        <span class="rail__trend ${trend.className}">${trend.emoji} ${trend.label}</span>
-        <span class="pill pill--ghost">${subject.topics.length} topic${subject.topics.length === 1 ? "" : "s"}</span>
-      </div>
-      <div class="card__body">
-        <div class="card__header">
-          <div>
-            <div class="card__title-row">
-              <input class="inline-input subject-title" value="${subject.name}" data-subject="${subject.id}" ${editMode ? "" : "readonly"} />
-              <div class="card__actions manage-only">
-                <button class="ghost icon delete-subject" data-subject="${subject.id}" aria-label="Delete subject">✕</button>
-              </div>
-            </div>
-            <div class="card__meta">
-              <span class="pill">${tag}</span>
-              <span class="note">focus: <input class="inline-input subject-focus" value="${subject.focus}" data-subject="${subject.id}" ${editMode ? "" : "readonly"} /></span>
-            </div>
-          </div>
-        </div>
-        <div class="card__meter">
-          ${dotMeter(subject.computedConfidence)}
-          <div class="control view-only">
-            <div class="readout">
-              <span class="readout__value">${subject.computedConfidence}/5</span>
-              <span class="pill pill--date">${subject.computedUpdatedAt}</span>
-            </div>
-          </div>
-          <div class="control edit-only">
-            <span class="note">auto · avg of topics</span>
-            <div class="date-control">
-              <label class="micro__label">updated</label>
-              <input type="date" class="date-input" data-scope="subject" data-id="${subject.id}" value="${subject.updatedAt || today()}" />
-            </div>
-          </div>
-        </div>
-        <div class="card__meta card__meta--spread manage-only">
-          <label class="micro__label">trend</label>
-          <select class="inline-select subject-trend" data-subject="${subject.id}">
-            <option value="steady" ${subject.trend === "steady" ? "selected" : ""}>steady</option>
-            <option value="rising" ${subject.trend === "rising" ? "selected" : ""}>rising</option>
-            <option value="volatile" ${subject.trend === "volatile" ? "selected" : ""}>volatile</option>
-          </select>
-          <label class="micro__label">tag</label>
-          <select class="inline-select subject-tag" data-subject="${subject.id}">
-            <option value="steady" ${subject.tag === "steady" ? "selected" : ""}>solid</option>
-            <option value="building" ${subject.tag === "building" ? "selected" : ""}>warming up</option>
-            <option value="hold" ${subject.tag === "hold" ? "selected" : ""}>hold line</option>
-            <option value="watch" ${subject.tag === "watch" ? "selected" : ""}>needs focus</option>
-            <option value="calm" ${subject.tag === "calm" ? "selected" : ""}>quiet</option>
-          </select>
-        </div>
-        <div class="card__topics">
-          <p class="micro__label">topics</p>
-          <div class="topics">${topicList(subject.topics, subject.id)}</div>
-          <form class="topic-form manage-only" data-subject="${subject.id}">
-            <input type="text" name="topic" placeholder="New topic" aria-label="Add topic" required />
-            <label class="slider">
-              <input type="range" min="1" max="5" step="1" name="confidence" value="3" />
-              <span class="slider__value">3/5</span>
-            </label>
-            <input type="text" name="subtopics" placeholder="Subtopics (comma separated)" aria-label="Subtopics" />
-            <input type="date" name="updatedAt" />
-            <button type="submit" class="primary">add topic</button>
-          </form>
-        </div>
-      </div>
-    `;
+function saveTopicDetail() {
+  if (!activeTopicPath) return;
+  const { subjectId, sectionId, topicId } = activeTopicPath;
+  subjects = subjects.map((subject) => {
+    if (subject.id !== subjectId) return subject;
+    return {
+      ...subject,
+      sections: subject.sections.map((section) => {
+        if (section.id !== sectionId) return section;
+        return {
+          ...section,
+          topics: section.topics.map((topic) =>
+            topic.id === topicId
+              ? {
+                  ...topic,
+                  notes: els.topicNotes.value,
+                  links: els.topicLinks.value
+                    .split(/\n+/)
+                    .map((l) => l.trim())
+                    .filter(Boolean),
+                }
+              : topic
+          ),
+        };
+      }),
+    };
+  });
+  persistSubjects();
+  closeModal(els.topicModal);
+  render();
+}
 
-    subjectList.appendChild(card);
+function handleSessionSubmit(event) {
+  event.preventDefault();
+  const subjectId = els.sessionSubject.value;
+  const sectionId = els.sessionSection.value;
+  const topicId = els.sessionTopic.value;
+  const outcome = els.sessionOutcome.value;
+
+  subjects = subjects.map((subject) => {
+    if (subject.id !== subjectId) return subject;
+    return {
+      ...subject,
+      sections: subject.sections.map((section) => {
+        if (section.id !== sectionId) return section;
+        return {
+          ...section,
+          topics: section.topics.map((topic) => {
+            if (topic.id !== topicId) return topic;
+            const delta = outcome === "good" ? 1 : outcome === "bad" ? -1 : 0;
+            const mastery = Math.max(0, Math.min(5, (topic.mastery || 0) + delta));
+            return { ...topic, mastery, lastReviewed: today() };
+          }),
+        };
+      }),
+    };
   });
 
-  updateMetrics(list);
+  persistSubjects();
+  closeModal(els.sessionModal);
+  render();
 }
 
-function updateMetrics(list) {
-  if (!list.length) {
-    summaryChip.textContent = "no subjects";
-    metricAvg.textContent = "0.0";
-    metricStable.textContent = "0";
-    metricVolatile.textContent = "0";
-    renderSignals(list);
-    return;
-  }
-
-  const average = list.reduce((sum, item) => sum + item.computedConfidence, 0) / list.length;
-  const stable = list.filter((item) => item.computedConfidence >= 4).length;
-  const volatileCount = list.filter((item) => item.trend === "volatile").length;
-
-  summaryChip.textContent = `avg ${average.toFixed(1)} / 5`;
-  metricAvg.textContent = average.toFixed(1);
-  metricStable.textContent = stable;
-  metricVolatile.textContent = volatileCount;
-
-  renderSignals(list);
-}
-
-function renderSignals(list) {
-  signalsRoot.innerHTML = "";
-
-  if (!list.length) {
-    const empty = document.createElement("div");
-    empty.className = "micro";
-    empty.innerHTML = `<p class="micro__label">no data</p><p class="micro__value">—</p><p class="micro__detail">adjust filters to see subjects</p>`;
-    signalsRoot.appendChild(empty);
-    return;
-  }
-
-  const highest = [...list].sort((a, b) => b.computedConfidence - a.computedConfidence)[0];
-  const lowest = [...list].sort((a, b) => a.computedConfidence - b.computedConfidence)[0];
-  const volatile = list.filter((item) => item.trend === "volatile");
-
-  const items = [
-    {
-      label: "peak",
-      value: `${highest.name}`,
-      detail: `${highest.computedConfidence}/5 · ${highest.focus}`,
-    },
-    {
-      label: "watch",
-      value: `${lowest.name}`,
-      detail: `${lowest.computedConfidence}/5 · ${lowest.focus}`,
-    },
-    {
-      label: "volatile",
-      value: `${volatile.length || "clear"}`,
-      detail: volatile.length ? "needs steady reps" : "no spikes detected",
-    },
-  ];
-
-  items.forEach((item) => {
-    const card = document.createElement("div");
-    card.className = "micro";
-    card.innerHTML = `
-      <p class="micro__label">${item.label}</p>
-      <p class="micro__value">${item.value}</p>
-      <p class="micro__detail">${item.detail}</p>
-    `;
-    signalsRoot.appendChild(card);
+function attachEvents() {
+  document.querySelectorAll("[data-view]").forEach((btn) => {
+    btn.addEventListener("click", () => switchView(btn.dataset.view));
   });
-}
-
-function shuffleSubjects() {
-  const clone = [...subjects];
-  for (let i = clone.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [clone[i], clone[j]] = [clone[j], clone[i]];
-  }
-  subjects = clone;
-  applyFilters();
+  els.subjectPicker.addEventListener("change", (e) => {
+    activeSubjectId = e.target.value;
+    render();
+  });
+  els.openLog.addEventListener("click", openSessionModal);
+  els.closeLog.addEventListener("click", () => closeModal(els.sessionModal));
+  els.sessionForm.addEventListener("submit", handleSessionSubmit);
+  els.sessionSubject.addEventListener("change", () => {
+    populateSessionSections();
+  });
+  els.sessionSection.addEventListener("change", populateSessionTopics);
+  els.closeTopic.addEventListener("click", () => closeModal(els.topicModal));
+  els.saveTopic.addEventListener("click", saveTopicDetail);
+  document.querySelectorAll(".modal__backdrop").forEach((backdrop) => {
+    backdrop.addEventListener("click", (e) => {
+      if (e.target.closest("#session-modal")) closeModal(els.sessionModal);
+      if (e.target.closest("#topic-modal")) closeModal(els.topicModal);
+    });
+  });
+  els.themeToggle.addEventListener("click", toggleTheme);
 }
 
 function toggleTheme() {
-  document.body.classList.toggle("dark");
+  document.documentElement.classList.toggle("theme-dark");
 }
 
-function toggleManage() {
-  editMode = !editMode;
-  document.body.classList.toggle("editing", editMode);
-  manageToggle.classList.toggle("primary", editMode);
-  manageToggle.textContent = editMode ? "done" : "manage";
-  applyFilters();
+function render() {
+  renderDashboard();
+  renderSubjectsView();
 }
 
-function setAccent(color, target) {
-  document.documentElement.style.setProperty("--accent", color);
-  document.documentElement.style.setProperty("--accent-soft", `${color}1a`);
-
-  swatches.forEach((swatch) => {
-    swatch.classList.toggle("swatch--active", swatch === target);
-  });
-}
-
-function applyFilters() {
-  const derived = deriveSubjects();
-  const search = filterSearch.value.trim().toLowerCase();
-  const min = Number(filterMin.value);
-  const trend = filterTrend.value;
-
-  const filtered = derived.filter((subject) => {
-    const matchesSearch = subject.name.toLowerCase().includes(search);
-    const matchesMin = subject.computedConfidence >= min;
-    const matchesTrend = trend === "all" ? true : subject.trend === trend;
-    return matchesSearch && matchesMin && matchesTrend;
-  });
-
-  renderSubjects(filtered);
-}
-
-function updateSubjectField(id, updater) {
-  subjects = subjects.map((item) => (item.id === id ? updater(item) : item));
-  applyFilters();
-}
-
-function updateTopic(subjectId, topicId, updater) {
-  updateSubjectField(subjectId, (subject) => ({
-    ...subject,
-    topics: subject.topics.map((topic) =>
-      topic.id === topicId ? updater(topic) : topic
-    ),
-  }));
-}
-
-function updateSubtopic(subjectId, topicId, subtopicId, updater) {
-  updateTopic(subjectId, topicId, (topic) => ({
-    ...topic,
-    subtopics: topic.subtopics.map((sub) =>
-      sub.id === subtopicId ? updater(sub) : sub
-    ),
-  }));
-}
-
-function handleConfidenceChange(target) {
-  syncSliderLabel(target);
-  const scope = target.dataset.scope;
-  const value = Number(target.value);
-  const container = target.closest(".control, .subtopic__controls") || target.parentElement;
-  const dateInput = container?.querySelector(".date-input");
-  const updatedAt = dateInput?.value || today();
-
-  if (scope === "subject") {
-    const id = target.dataset.id;
-    updateSubjectField(id, (item) => ({ ...item, confidence: value, updatedAt }));
-  }
-
-  if (scope === "topic") {
-    const subjectId = target.dataset.subject;
-    const topicId = target.dataset.topicId;
-    updateTopic(subjectId, topicId, (topic) => ({ ...topic, confidence: value, updatedAt }));
-  }
-
-  if (scope === "subtopic") {
-    const subjectId = target.dataset.subject;
-    const topicId = target.dataset.topicId;
-    const subtopicId = target.dataset.subtopicId;
-    updateSubtopic(subjectId, topicId, subtopicId, (sub) => ({ ...sub, confidence: value, updatedAt }));
-  }
-}
-
-function handleDateChange(target) {
-  const scope = target.dataset.scope;
-  const updatedAt = target.value || today();
-
-  if (scope === "subject") {
-    updateSubjectField(target.dataset.id, (item) => ({ ...item, updatedAt }));
-  }
-  if (scope === "topic") {
-    updateTopic(target.dataset.subject, target.dataset.topicId, (topic) => ({ ...topic, updatedAt }));
-  }
-  if (scope === "subtopic") {
-    updateSubtopic(target.dataset.subject, target.dataset.topicId, target.dataset.subtopicId, (sub) => ({ ...sub, updatedAt }));
-  }
-}
-
-function handleTopicAdd(form) {
-  const subjectId = form.dataset.subject;
-  const title = form.topic.value.trim();
-  const confidence = Number(form.confidence.value || 3);
-  const updatedAt = form.updatedAt.value || today();
-  const subtopicsRaw = form.subtopics.value.trim();
-  if (!title) return;
-
-  const subtopics = subtopicsRaw
-    ? subtopicsRaw.split(",").map((s) => s.trim()).filter(Boolean).map((title) => ({
-        id: makeId(),
-        title,
-        confidence,
-        updatedAt,
-      }))
-    : [];
-
-  updateSubjectField(subjectId, (subject) => ({
-    ...subject,
-    topics: [
-      ...subject.topics,
-      {
-        id: makeId(),
-        title,
-        confidence,
-        updatedAt,
-        subtopics,
-      },
-    ],
-  }));
-
-  form.reset();
-}
-
-function handleSubtopicAdd(form) {
-  const subjectId = form.dataset.subject;
-  const topicId = form.dataset.topicId;
-  const subtopic = form.subtopic.value.trim();
-  const confidence = Number(form.confidence.value || 3);
-  const updatedAt = form.updatedAt.value || today();
-  if (!subtopic) return;
-
-  updateTopic(subjectId, topicId, (topic) => ({
-    ...topic,
-    subtopics: [...topic.subtopics, { id: makeId(), title: subtopic, confidence, updatedAt }],
-  }));
-
-  form.reset();
-}
-
-function handleSubjectAdd(form) {
-  const name = form.name.value.trim();
-  if (!name) return;
-
-  const confidence = Number(form.confidence.value || 3);
-  const trend = form.trend.value || "steady";
-  const focus = form.focus.value.trim() || "new focus";
-  const tag = form.tag.value || "steady";
-  const updatedAt = form.updatedAt.value || today();
-
-  subjects = [
-    ...subjects,
-    {
-      id: makeId(),
-      name,
-      confidence,
-      trend,
-      focus,
-      tag,
-      updatedAt,
-      topics: [],
-    },
-  ];
-
-  form.reset();
-  applyFilters();
-}
-
-function handleSubjectDelete(subjectId) {
-  subjects = subjects.filter((s) => s.id !== subjectId);
-  applyFilters();
-}
-
-function handleTopicDelete(subjectId, topicId) {
-  updateSubjectField(subjectId, (subject) => ({
-    ...subject,
-    topics: subject.topics.filter((topic) => topic.id !== topicId),
-  }));
-}
-
-function handleSubtopicDelete(subjectId, topicId, subtopicId) {
-  updateTopic(subjectId, topicId, (topic) => ({
-    ...topic,
-    subtopics: topic.subtopics.filter((sub) => sub.id !== subtopicId),
-  }));
-}
-
-function handleTextEdit(target) {
-  const value = target.value.trim();
-
-  if (!editMode) return;
-
-  if (target.classList.contains("subject-title")) {
-    updateSubjectField(target.dataset.subject, (subject) => ({ ...subject, name: value || "Untitled" }));
-  }
-  if (target.classList.contains("subject-focus")) {
-    updateSubjectField(target.dataset.subject, (subject) => ({ ...subject, focus: value }));
-  }
-  if (target.classList.contains("topic-title")) {
-    updateTopic(target.dataset.subject, target.dataset.topicId, (topic) => ({ ...topic, title: value || "Topic" }));
-  }
-  if (target.classList.contains("subtopic-title")) {
-    updateSubtopic(target.dataset.subject, target.dataset.topicId, target.dataset.subtopicId, (sub) => ({ ...sub, title: value || "Subtopic" }));
-  }
-}
-
-function handleSelectChange(target) {
-  if (!editMode) return;
-
-  if (target.classList.contains("subject-trend")) {
-    updateSubjectField(target.dataset.subject, (subject) => ({ ...subject, trend: target.value }));
-  }
-  if (target.classList.contains("subject-tag")) {
-    updateSubjectField(target.dataset.subject, (subject) => ({ ...subject, tag: target.value }));
-  }
-}
-
-function init() {
-  applyFilters();
-  themeToggle.addEventListener("click", toggleTheme);
-  shuffleButton.addEventListener("click", shuffleSubjects);
-  manageToggle.addEventListener("click", toggleManage);
-  filterSearch.addEventListener("input", applyFilters);
-  filterMin.addEventListener("change", applyFilters);
-  filterTrend.addEventListener("change", applyFilters);
-
-  subjectForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    handleSubjectAdd(event.target);
-  });
-
-  subjectForm.addEventListener("input", (event) => {
-    if (event.target.type === "range") {
-      syncSliderLabel(event.target);
-    }
-  });
-
-  if (subjectForm.updatedAt) {
-    subjectForm.updatedAt.value = today();
-  }
-
-  subjectList.addEventListener("input", (event) => {
-    if (event.target.matches(".confidence-slider")) {
-      handleConfidenceChange(event.target);
-    }
-    if (event.target.matches(".date-input")) {
-      handleDateChange(event.target);
-    }
-    if (event.target.matches(".inline-input")) {
-      handleTextEdit(event.target);
-    }
-    if (event.target.matches(".inline-select")) {
-      handleSelectChange(event.target);
-    }
-  });
-
-  document.addEventListener("input", (event) => {
-    if (event.target.type === "range") {
-      syncSliderLabel(event.target);
-    }
-  });
-
-  subjectList.addEventListener("change", (event) => {
-    if (event.target.matches(".inline-select")) {
-      handleSelectChange(event.target);
-    }
-    if (event.target.matches(".date-input")) {
-      handleDateChange(event.target);
-    }
-  });
-
-  subjectList.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (event.target.matches(".topic-form")) {
-      handleTopicAdd(event.target);
-    }
-    if (event.target.matches(".subtopic-form")) {
-      handleSubtopicAdd(event.target);
-    }
-  });
-
-  subjectList.addEventListener("click", (event) => {
-    const target = event.target;
-    if (target.closest(".delete-subject")) {
-      handleSubjectDelete(target.closest(".delete-subject").dataset.subject);
-    }
-    if (target.closest(".delete-topic")) {
-      const btn = target.closest(".delete-topic");
-      handleTopicDelete(btn.dataset.subject, btn.dataset.topicId);
-    }
-    if (target.closest(".delete-subtopic")) {
-      const btn = target.closest(".delete-subtopic");
-      handleSubtopicDelete(btn.dataset.subject, btn.dataset.topicId, btn.dataset.subtopicId);
-    }
-  });
-
-  swatches.forEach((swatch) => {
-    swatch.addEventListener("click", () => setAccent(swatch.dataset.accent, swatch));
-  });
-  const activeSwatch = document.querySelector(".swatch--active");
-  if (activeSwatch) {
-    setAccent(activeSwatch.dataset.accent, activeSwatch);
-  }
-}
-
-init();
+attachEvents();
+render();

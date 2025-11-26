@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Subject Confidence — Nothing OS Style</title>
+    <title>Nothing OS Revision Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,136 +15,130 @@
   <body>
     <div class="chrome">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">subject signal sheet</p>
-          <h1>Confidence Monitor</h1>
-          <p class="lede">
-            A Nothing OS inspired confidence console. Add topics and subtopics, filter subjects, and tune scores on the fly.
-          </p>
+        <div class="brand">
+          <div class="glyph">
+            <div class="glyph__ring glyph__ring--outer"></div>
+            <div class="glyph__ring glyph__ring--inner"></div>
+            <div class="glyph__dot"></div>
+          </div>
+          <div>
+            <p class="eyebrow">revision console</p>
+            <h1>Nothing OS Tracker</h1>
+          </div>
         </div>
         <div class="topbar__actions">
-          <button class="ghost" id="toggle-theme" aria-label="Toggle theme">light / dark</button>
-          <button class="ghost" id="manage-mode" aria-label="Manage subjects">manage</button>
-          <button class="primary" id="shuffle" aria-label="Shuffle signals">shuffle</button>
-          <div class="swatches" role="group" aria-label="Accent">
-            <button class="swatch swatch--active" data-accent="#00DFA3" aria-label="Mint"></button>
-            <button class="swatch" data-accent="#FF5E3A" aria-label="Coral"></button>
-            <button class="swatch" data-accent="#00FFAA" aria-label="Neon"></button>
-            <button class="swatch" data-accent="#FFB347" aria-label="Amber"></button>
-          </div>
+          <button class="ghost" id="toggle-theme">light / dark</button>
+          <button class="ghost" data-view="dashboard" aria-current="true">dashboard</button>
+          <button class="ghost" data-view="subjects">subjects</button>
+          <button class="primary" id="open-log">log session</button>
         </div>
       </header>
 
-      <main class="grid">
-        <section class="panel panel--wide status">
-          <div class="status__identity">
-            <div class="glyph">
-              <div class="glyph__ring glyph__ring--outer"></div>
-              <div class="glyph__ring glyph__ring--inner"></div>
-              <div class="glyph__dot"></div>
-            </div>
-            <div>
-              <p class="eyebrow">design system</p>
-              <h2>Nothing OS spec</h2>
-              <div class="status__tags">
-                <span class="pill">monochrome</span>
-                <span class="pill">dot-matrix</span>
-                <span class="pill">glass cards</span>
+      <main>
+        <section id="dashboard" class="view view--active">
+          <div class="panel panel--wide">
+            <div class="panel__header">
+              <div>
+                <p class="eyebrow">countdown</p>
+                <h2>Mocks in <span id="countdown">0</span> days</h2>
               </div>
+              <div class="chip" id="overall-progress">Overall 0%</div>
             </div>
+            <div class="grid grid--cards" id="subject-cards"></div>
           </div>
-          <div class="status__metrics">
-            <div class="metric">
-              <p class="micro__label">mean confidence</p>
-              <p class="metric__value" id="metric-avg">0.0</p>
-              <div class="dots dots--pulse" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span>
+
+          <div class="panel">
+            <div class="panel__header">
+              <div>
+                <p class="eyebrow">watch list</p>
+                <h2>Weakest topics</h2>
               </div>
             </div>
-            <div class="metric">
-              <p class="micro__label">stable subjects</p>
-              <p class="metric__value" id="metric-stable">0</p>
-              <p class="micro__hint">≥4 /5 confidence</p>
-            </div>
-            <div class="metric">
-              <p class="micro__label">volatility</p>
-              <p class="metric__value" id="metric-volatile">0</p>
-              <p class="micro__hint">watch-list count</p>
-            </div>
+            <div id="weak-topics" class="list"></div>
           </div>
         </section>
 
-        <section class="panel panel--wide">
-          <div class="panel__header">
-            <div>
-              <p class="eyebrow">confidence table</p>
-              <h2>Subjects</h2>
+        <section id="subjects" class="view">
+          <div class="panel panel--wide">
+            <div class="panel__header">
+              <div>
+                <p class="eyebrow">subject browser</p>
+                <h2>Topics by subject</h2>
+              </div>
+              <div class="toolbar">
+                <label class="micro__label" for="subject-picker">subject</label>
+                <select id="subject-picker"></select>
+              </div>
             </div>
-            <div class="chip" id="summary-chip">avg 0.0 / 5</div>
+            <div id="section-list" class="section-list"></div>
           </div>
-          <div class="manage manage--add">
-            <p class="micro__label">add subject</p>
-            <form id="subject-form" class="subject-form">
-              <input type="text" name="name" placeholder="Subject name" required />
-              <input type="text" name="focus" placeholder="Focus area" />
-              <select name="trend">
-                <option value="steady">steady</option>
-                <option value="rising">rising</option>
-                <option value="volatile">volatile</option>
-              </select>
-              <select name="tag">
-                <option value="steady">solid</option>
-                <option value="building">warming up</option>
-                <option value="hold">hold line</option>
-                <option value="watch">needs focus</option>
-                <option value="calm">quiet</option>
-              </select>
-              <label class="slider">
-                <input type="range" min="1" max="5" step="1" name="confidence" value="3" />
-                <span class="slider__value">3/5</span>
-              </label>
-              <input type="date" name="updatedAt" />
-              <button type="submit" class="primary">save subject</button>
-            </form>
-          </div>
-          <div class="filters">
-            <div class="filter">
-              <label class="micro__label" for="filter-search">search</label>
-              <input id="filter-search" type="search" placeholder="Find subject" />
-            </div>
-            <div class="filter">
-              <label class="micro__label" for="filter-min">min confidence</label>
-              <select id="filter-min">
-                <option value="1">1+</option>
-                <option value="2">2+</option>
-                <option value="3">3+</option>
-                <option value="4">4+</option>
-                <option value="5">5</option>
-              </select>
-            </div>
-            <div class="filter">
-              <label class="micro__label" for="filter-trend">trend</label>
-              <select id="filter-trend">
-                <option value="all">all</option>
-                <option value="rising">rising</option>
-                <option value="steady">steady</option>
-                <option value="volatile">volatile</option>
-              </select>
-            </div>
-          </div>
-          <div class="list" id="subject-list"></div>
-        </section>
-
-        <section class="panel stack">
-          <div class="panel__header">
-            <div>
-              <p class="eyebrow">quick pulses</p>
-              <h2>Signals</h2>
-            </div>
-          </div>
-          <div class="signals" id="signals"></div>
         </section>
       </main>
+    </div>
+
+    <div class="modal" id="session-modal" aria-hidden="true">
+      <div class="modal__backdrop"></div>
+      <div class="modal__card">
+        <div class="modal__header">
+          <div>
+            <p class="eyebrow">log study session</p>
+            <h3>Update mastery</h3>
+          </div>
+          <button class="ghost" id="close-log" aria-label="Close">close</button>
+        </div>
+        <form id="session-form" class="session-form">
+          <label>
+            <span class="micro__label">Subject</span>
+            <select id="session-subject" required></select>
+          </label>
+          <label>
+            <span class="micro__label">Section</span>
+            <select id="session-section" required></select>
+          </label>
+          <label>
+            <span class="micro__label">Topic</span>
+            <select id="session-topic" required></select>
+          </label>
+          <label>
+            <span class="micro__label">Minutes (optional)</span>
+            <input type="number" min="0" step="5" id="session-minutes" placeholder="30" />
+          </label>
+          <label>
+            <span class="micro__label">How did it go?</span>
+            <select id="session-outcome">
+              <option value="bad">Bad</option>
+              <option value="ok" selected>OK</option>
+              <option value="good">Good</option>
+            </select>
+          </label>
+          <button type="submit" class="primary">log session</button>
+        </form>
+        <p class="micro__hint">Outcome nudges mastery (good +1, bad −1) and updates last reviewed to today.</p>
+      </div>
+    </div>
+
+    <div class="modal" id="topic-modal" aria-hidden="true">
+      <div class="modal__backdrop"></div>
+      <div class="modal__card">
+        <div class="modal__header">
+          <div>
+            <p class="eyebrow">topic details</p>
+            <h3 id="topic-modal-title">Topic</h3>
+          </div>
+          <button class="ghost" id="close-topic" aria-label="Close">close</button>
+        </div>
+        <div class="topic-detail">
+          <label>
+            <span class="micro__label">Notes</span>
+            <textarea id="topic-notes" rows="4" placeholder="Quick notes"></textarea>
+          </label>
+          <label>
+            <span class="micro__label">Links (one per line)</span>
+            <textarea id="topic-links" rows="3" placeholder="https://..."></textarea>
+          </label>
+          <button class="primary" id="save-topic">save</button>
+        </div>
+      </div>
     </div>
 
     <script src="app.js" type="module"></script>
