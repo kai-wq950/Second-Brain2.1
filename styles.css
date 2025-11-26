@@ -471,3 +471,62 @@ textarea {
     justify-content: space-between;
   }
 }
+
+.toolbar--wrap {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stack {
+  display: grid;
+  gap: 10px;
+}
+
+.stack--forms {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin: 12px 0 4px;
+}
+
+.mini-form {
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  display: grid;
+  gap: 8px;
+}
+
+.theme-dark .mini-form {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.subtopic-list {
+  margin: 10px 0 0;
+  display: grid;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 1px dashed var(--border);
+}
+
+.subtopic-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.theme-dark .subtopic-row {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.inline-add {
+  margin-top: 6px;
+  width: fit-content;
+}
+
+.mastery--interactive .dot:hover {
+  border-color: var(--text);
+}

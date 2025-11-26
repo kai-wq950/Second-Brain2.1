@@ -65,10 +65,49 @@
                 <p class="eyebrow">subject browser</p>
                 <h2>Topics by subject</h2>
               </div>
-              <div class="toolbar">
+              <div class="toolbar toolbar--wrap">
                 <label class="micro__label" for="subject-picker">subject</label>
                 <select id="subject-picker"></select>
+                <input id="filter-search" type="search" placeholder="search topics" />
+                <label class="micro__label" for="filter-min">min mastery</label>
+                <select id="filter-min">
+                  <option value="0">0+</option>
+                  <option value="1">1+</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                  <option value="5">5</option>
+                </select>
+                <button id="toggle-manage" class="ghost" aria-pressed="false">manage</button>
               </div>
+            </div>
+            <div class="stack stack--forms">
+              <form id="add-subject-form" class="mini-form">
+                <p class="eyebrow">Add subject</p>
+                <input required name="name" placeholder="Subject name" />
+                <button class="ghost" type="submit">add</button>
+              </form>
+              <form id="add-section-form" class="mini-form">
+                <p class="eyebrow">Add section</p>
+                <select name="subject"></select>
+                <input required name="name" placeholder="Section name" />
+                <button class="ghost" type="submit">add</button>
+              </form>
+              <form id="add-topic-form" class="mini-form">
+                <p class="eyebrow">Add topic</p>
+                <select name="subject"></select>
+                <select name="section"></select>
+                <input required name="name" placeholder="Topic name" />
+                <button class="ghost" type="submit">add</button>
+              </form>
+              <form id="add-subtopic-form" class="mini-form">
+                <p class="eyebrow">Add subtopic</p>
+                <select name="subject"></select>
+                <select name="section"></select>
+                <select name="topic"></select>
+                <input required name="name" placeholder="Subtopic name" />
+                <button class="ghost" type="submit">add</button>
+              </form>
             </div>
             <div id="section-list" class="section-list"></div>
           </div>
